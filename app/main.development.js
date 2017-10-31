@@ -74,7 +74,7 @@ app.on('ready', () =>
     template = [{
       label: 'Electron',
       submenu: [{
-        label: 'About ElectronReact',
+        label: 'About Discourse Forums',
         selector: 'orderFrontStandardAboutPanel:'
       }, {
         type: 'separator'
@@ -84,7 +84,7 @@ app.on('ready', () =>
       }, {
         type: 'separator'
       }, {
-        label: 'Hide ElectronReact',
+        label: 'Hide Discourse Forums',
         accelerator: 'Command+H',
         selector: 'hide:'
       }, {
