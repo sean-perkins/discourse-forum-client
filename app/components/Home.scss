@@ -1,0 +1,14 @@
+:local {
+  WebView {
+    position: absolute;
+    width: calc(100% - 80px);
+    height: 100%;
+  }
+  .container h2 {
+    font-size: 5rem;
+  }
+
+  .container a {
+    font-size: 1.4rem;
+  }
+}
