@@ -1,26 +1,19 @@
 import * as React from 'react';
-import { Grid, Row, Col } from 'react-flexbox-grid';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu';
+import SiteForm from './SiteForm';
+import { Site } from '../models/Site';
 
-const storage = require('electron-json-storage');
-
+const FontAwesome = require('react-fontawesome');
 const Modal = require('react-modal');
-
 let styles = require('./Navigation.scss');
 
 interface State {
-    showModal: boolean;
-    siteUrl: string;
-    logoUrl: string;
+    // The visibility of the create/update modal
+    modalVisible: boolean;
     activeSite?: Site;
     navItems: Site[];
     editMode: boolean;
     editItem?: any;
-}
-
-interface Site {
-    url: string;
-    logo: string;
 }
 
 export default class Navigation extends React.Component {
@@ -30,114 +23,51 @@ export default class Navigation extends React.Component {
     constructor(public props: any) {
         super();
         this.state = {
-            showModal: false,
-            siteUrl: '',
-            logoUrl: '',
+            modalVisible: false,
             navItems: [],
             editMode: false
         };
 
-        this.submitCommunity = this.submitCommunity.bind(this);
-        this.addNewCommunity = this.addNewCommunity.bind(this);
-        this.closeNewCommunityModal = this.closeNewCommunityModal.bind(this);
-        this.updateSiteUrl = this.updateSiteUrl.bind(this);
-        this.updateLogoUrl = this.updateLogoUrl.bind(this);
+        this.closeSiteModal = this.closeSiteModal.bind(this);
         this.handleNavItemOptions = this.handleNavItemOptions.bind(this);
 
-        storage.get('sites', (error: any, existingSites: any) => {
-            if (Array.isArray(existingSites) && existingSites.length < 1 || Object.keys(existingSites).length < 1) {
+        this.displaySiteModal = this.displaySiteModal.bind(this);
+
+        Site.getSites().then(sites => {
+            if (sites.length > 0) {
                 this.setState({
-                    showModal: true
+                    navItems: sites
                 });
             }
             else {
                 this.setState({
-                    navItems: existingSites
+                    modalVisible: true
                 });
             }
         });
     }
 
-    addNewCommunity() {
-        this.setState({ showModal: true });
-    }
-
-    closeNewCommunityModal() {
+    displaySiteModal() {
         this.setState({
-            showModal: false ,
-            logoUrl: '',
-            siteUrl: '',
-            editMode: false,
-            editItem: undefined
+            modalVisible: true
         });
     }
 
-    submitCommunity() {
-        if (this.state.siteUrl && this.state.siteUrl.trim().length > 0) {
-            const site = {
-                url: this.state.siteUrl,
-                logo: this.state.logoUrl
-            };
-            if (this.state.editMode) {
-                this.updateExistingSite(site);
-            }
-            else {
-                let sites: Site[] = [];
-                storage.get('sites', (error: any, data: any) => {
-                    if (error) {
-                        throw error;
-                    }
-                    sites = Array.isArray(data) ? data : [];
-                    sites.push(site);
-                    storage.set('sites', sites, (error: any) => {
-                        if (error) {
-                            this.setState({
-                                showModal: false,
-                                editMode: false,
-                                editItem: undefined
-                            });
-                            throw error;
-                        }
-                        this.setState({
-                            navItems: sites
-                        });
-                        this.setState({
-                            showModal: false,
-                            siteUrl: '',
-                            logoUrl: '',
-                            editMode: false,
-                            editItem: undefined
-                        });
-                    });
-                });
-            }
+    closeSiteModal(event: any, sites?: Site[]) {
+        const updatedState = {
+            modalVisible: false,
+            editItem: undefined,
+            navItems: sites ? sites : this.state.navItems
         }
-    }
-
-    updateSiteUrl(event: any) {
-        if (event && event.target) {
-            this.setState({
-                siteUrl: event.target.value
-            });
-        }
-    }
-
-    updateLogoUrl(event: any) {
-        if (event && event.target) {
-            this.setState({
-                logoUrl: event.target.value
-            });
-        }
+        this.setState(updatedState);
+        this.props.updateCurrentSite();
     }
 
     handleNavItemOptions(e: any, data: any) {
         switch(data.type) {
             case 'edit':
                 this.setState({
-                    siteUrl: data.item.url,
-                    logoUrl: data.item.logo,
-                    showModal: true,
-                    editMode: true,
+                    modalVisible: true,
                     editItem: data.item
                 });
                 break;
@@ -147,73 +77,14 @@ export default class Navigation extends React.Component {
         }
     }
 
-    updateExistingSite(site: any) {
-        storage.get('sites', (error: any, data: any) => {
-            if (error) {
-                throw error;
-            }
-            let sites = Array.isArray(data) ? data : [];
-            let matchIndex = -1;
-            for (let i = 0; i < sites.length; i++) {
-                const existingSite = sites[i];
-                if (existingSite.url == site.url) {
-                    matchIndex = i;
-                    break;
-                }
-            }
-            if (matchIndex !== -1) {
-                sites[matchIndex] = site;
-            }
-            storage.set('sites', sites, (error: any) => {
-                if (error) {
-                    throw error;
-                }
-                if (this.props.activeUrl == this.state.editItem.url) {
-                    this.props.updateCurrentSite();
-                }
-                this.setState({
-                    navItems: sites,
-                    showModal: false,
-                    siteUrl: '',
-                    logoUrl: '',
-                    editMode: false,
-                    editItem: undefined
-                });
-            });
-        });
-    }
-
     removeSiteUrl(site: any) {
-        storage.get('sites', (error: any, data: any) => {
-            if (error) {
-                throw error;
+        Site.remove(site.url).then(sites => {
+            if (this.props.activeUrl == site.url) {
+                this.props.updateCurrentSite();
             }
-            let sites = Array.isArray(data) ? data : [];
-            let matchIndex = -1;
-            for (let i = 0; i < sites.length; i++) {
-                const existingSite = sites[i];
-                if (existingSite.url == site.url) {
-                    matchIndex = i;
-                    break;
-                }
-            }
-            if (matchIndex !== -1) {
-                sites.splice(matchIndex, 1);
-            }
-
-
-            storage.set('sites', sites, (error: any) => {
-                if (error) {
-                    throw error;
-                }
-                if (this.props.activeUrl == site.url) {
-                    this.props.updateCurrentSite();
-                }
-                this.setState({
-                    navItems: sites,
-                    showModal: sites.length < 1
-                });
-
+            this.setState({
+                navItems: sites,
+                modalVisible: sites.length < 1
             });
         });
     }
@@ -255,53 +126,36 @@ export default class Navigation extends React.Component {
                 </div>
             );
         }
-        const buttonText = this.state.editMode ? 'Update' : 'Continue';
 
         return (
             <div>
                 <div className={styles.container} data-tid="container">
                     <div className={styles.community}>
                         {navItems}
-                        <div className={styles.item} onClick={this.addNewCommunity}>
-                            <button className={styles.addBtn}>+</button>
+                        <div className={styles.item} onClick={this.displaySiteModal}>
+                            <button className={styles.addBtn}>
+                                <FontAwesome name="plus" />
+                            </button>
                         </div>
                     </div>
                 </div>
                 <Modal
-                    isOpen={this.state.showModal}
-                    onRequestClose={this.closeNewCommunityModal}
+                    isOpen={this.state.modalVisible}
+                    onRequestClose={this.closeSiteModal}
                     className={styles.addModal}
                     contentLabel="Add Discourse Community Modal">
                     <div className={styles.modalTopbar}>
                         <img className={styles.logo}
                             src="http://www.hitmanforum.com/uploads/hitmanforum/36/ed31945a84dbeef4.png" />
                         <span className={styles.close}
-                            onClick={this.closeNewCommunityModal}>X</span>
+                            onClick={this.closeSiteModal}>
+                            <FontAwesome name="times" />
+                        </span>
                     </div>
                     <div className={styles.modalContainer}>
-                        <div className={styles.formContainer}>
-                            <h3 className="text-center">Enter your Forums</h3>
-                            <p>Enter your forums <strong>site URL</strong>.</p>
-                            <Grid fluid>
-                                <Row>
-                                    <Col md={12}>
-                                        <input className="mt-2" value={this.state.siteUrl}
-                                            type="text" onChange={this.updateSiteUrl} placeholder="https://discourse.site.com" />
-                                    </Col>
-                                </Row>
-                                <Row >
-                                    <Col md={12}>
-                                        <input className="mt-2"
-                                            type="text"
-                                            value={this.state.logoUrl}
-                                            onChange={this.updateLogoUrl}
-                                            placeholder="Icon Url (http://)" />
-                                    </Col>
-                                </Row>
-                            </Grid>
-                            <button className={styles.modalBtn}
-                                onClick={this.submitCommunity}>{buttonText}</button>
-                        </div>
+                        <SiteForm
+                            onModalClose={this.closeSiteModal}
+                            editItem={this.state.editItem}/>
                     </div>
                 </Modal>
             </div>

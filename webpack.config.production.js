@@ -94,6 +94,11 @@ module.exports = merge(baseConfig, {
       {
         test: /\.(?:ico|gif|png|jpg|jpeg|webp)$/,
         use: 'url-loader',
+      },
+      {
+          test: /\.css$/,
+          loader: 'style-loader!css-loader',
+          include: /flexboxgrid/
       }
     ]
   },
