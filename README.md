@@ -2,7 +2,7 @@
 
 # Discourse Forum Client
 
-**v1.1.0**
+**v1.1.1**
 
 A desktop-only client for managing different discourse communities. Quickly change between your favorite communities. Alternatively you can just use this template as a way to favorite important sites.
 
@@ -10,7 +10,7 @@ The code is **rough**. If free time allows, I'll go back and update the code to 
 
 Built with React and Electron.
 
-<a href="http://downloads.ngcademy.com/discourse-forum-client-1.1.0.zip">
+<a href="http://downloads.ngcademy.com/discourse-forum-client-1.1.1.zip">
     <img width="200px" src="https://user-images.githubusercontent.com/13732623/32207141-69d4b7ce-bdd0-11e7-96a1-584e0bd26751.png"></a>
 
 Don't feel comfortable downloading? No problem. Build instructions are below to package the app yourself.
