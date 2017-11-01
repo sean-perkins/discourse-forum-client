@@ -1,7 +1,7 @@
 {
   "name": "discourse-forum-client",
   "productName": "Discourse Forum Client",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A desktop client for discourse forum boards. Quickly change between your favorite sites.",
   "main": "main.js",
   "scripts": {
@@ -173,11 +173,13 @@
     "react-dom": "^16.0.0",
     "react-electron-web-view": "^2.0.1",
     "react-flexbox-grid": "^2.0.0",
+    "react-fontawesome": "^1.6.1",
     "react-modal": "^3.1.0",
     "react-redux": "^5.0.1",
     "react-router": "^4.1.1",
     "react-router-dom": "^4.1.1",
     "react-router-redux": "^5.0.0-alpha.6",
+    "react-spinners": "^0.1.9",
     "redux": "^3.6.0",
     "redux-thunk": "^2.1.0",
     "source-map-support": "^0.5.0"

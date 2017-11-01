@@ -1,33 +1,51 @@
 import * as React from 'react';
 import Navigation from '../components/Navigation';
-import Home from '../components/Home';
-
-const storage = require('electron-json-storage');
+import Frame from '../components/Frame';
+import { Site } from '../models/Site';
 
 export default class App extends React.Component {
 
     constructor(public state: any) {
         super();
+        this.setWebView = this.setWebView.bind(this);
         this.state = {
-            activeSite: undefined
+            activeSite: undefined,
+            webview: undefined,
+            frame: <Frame setWebView={this.setWebView} webview={this.state.webview} siteUrl={this.siteUrl} />
         };
-        this.updateCurrentSite();
-        this.updateCurrentSite = this.updateCurrentSite.bind(this);
         this.updateActiveSite = this.updateActiveSite.bind(this);
+        this.updateCurrentSite = this.updateCurrentSite.bind(this);
+        this.updateCurrentSite();
     }
 
     updateActiveSite(site: any) {
+        // Clear the current active site
         this.setState({
-            activeSite: site
+            activeSite: undefined
         });
+        // Delay setting the active site so it will register when tapping the same item again
+        setTimeout(() => {
+            this.setState({
+                activeSite: site
+            });
+            if (this.state.webview) {
+                this.state.webview.clearHistory();
+                setTimeout(() => {
+                    this.setState({
+                        frame: <Frame
+                            setWebView={this.setWebView}
+                            webview={this.state.webview}
+                            siteUrl={this.siteUrl} />
+                    })
+                });
+            }
+        })
     }
 
     updateCurrentSite() {
-        storage.get('sites', (error: any, existingSites: any) => {
-            if (Array.isArray(existingSites) && existingSites.length > 0 || Object.keys(existingSites).length > 0) {
-                this.setState({
-                    activeSite: existingSites[0]
-                });
+        Site.getSites().then(sites => {
+            if (sites.length > 0) {
+                this.updateActiveSite(sites[0]);
             }
         });
     }
@@ -39,6 +57,12 @@ export default class App extends React.Component {
         return 'https://www.google.com';
     }
 
+    setWebView(webview: any) {
+        this.setState({
+            webview: webview
+        });
+    }
+
     render() {
         return (
             <div>
@@ -47,7 +71,7 @@ export default class App extends React.Component {
                     updateCurrentSite={this.updateCurrentSite}
                     updateActiveSite={this.updateActiveSite} />
                 <div className="nav-container">
-                    <Home siteUrl={this.siteUrl} />
+                    {this.state.frame}
                 </div>
             </div>
         );

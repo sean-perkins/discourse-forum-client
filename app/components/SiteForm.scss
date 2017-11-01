@@ -1,0 +1,60 @@
+
+ :local {
+     .formContainer {
+        border: 1px solid #E8E8E8;
+        background-color: #fff;
+        width: 400px;
+        height: 400px;
+        border-radius: 3px;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-left: auto;
+        margin-right: auto;
+        left: 0;
+        right: 0;
+        box-shadow: 0px 2px 0px #939494;
+        padding: 20px;
+        text-align: center;
+        h3 {
+            font-size: 22px;
+        }
+        p {
+            font-size: 16px;
+        }
+        .siteLabel {
+            line-height: 40px;
+        }
+        input {
+            padding: 10px 5px;
+            border: 1px solid #A0A0A2;
+            width: 100%;
+            font-size: 16px;
+            border-radius: 3px;
+            &:active,
+            &:focus {
+                outline: 0;
+            }
+        }
+        .error {
+            border-color: red;
+        }
+    }
+
+    .modalBtn {
+        margin-top: 40px;
+        background-color: #2EA664;
+        color: #fff;
+        width: 100%;
+        font-size: 16px;
+        font-weight: 600;
+        height: 40px;
+        border-radius: 3px;
+        border: 0;
+        transition: all .5s;
+        &:hover {
+            background-color: darken(#2EA664, 5%);
+
+        }
+    }
+}
