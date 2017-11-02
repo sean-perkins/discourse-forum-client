@@ -2,6 +2,15 @@
     "discouse.nativescript.org": {
         "logo": "https://www.nativescript.org/favicon.ico"
     },
+    "discuss.atom.io": {
+        "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Atom_editor_logo.svg/2000px-Atom_editor_logo.svg.png"
+    },
+    "youtube.com": {
+        "logo": "https://cdn2.iconfinder.com/data/icons/ios-7-style-metro-ui-icons/512/Flurry_YouTube_Alt.png"
+    },
+    "meetmaestro.com": {
+        "logo": "https://meetmaestro.com/_themes/maestro/img/favicon.png"
+    },
     "gmail.com": {
         "logo": "https://image.flaticon.com/icons/png/512/281/281769.png"
     },

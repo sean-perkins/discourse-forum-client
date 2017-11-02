@@ -2,6 +2,8 @@ import * as React from 'react';
 import { Grid, Row, Col } from 'react-flexbox-grid';
 import { Site } from '../models/Site';
 import { Guid } from '../utils/Guid';
+import axios from 'axios';
+import { DEFAULT_SITES } from '../utils/AppLinks';
 const FontAwesome = require('react-fontawesome');
 
 let styles = require('./SiteForm.scss');
@@ -11,7 +13,8 @@ interface State {
     siteUrl: string;
     logoUrl: string;
     submitted: boolean;
-    editItem?: any
+    editItem?: any,
+    defaultSites: any
 }
 
 export default class SiteForm extends React.Component {
@@ -25,12 +28,21 @@ export default class SiteForm extends React.Component {
             identity: props.editItem ? props.editItem.identity : Guid(),
             siteUrl: props.editItem ? props.editItem.url : '',
             logoUrl: props.editItem ? props.editItem.logo : '',
-            submitted: false
+            submitted: false,
+            defaultSites: []
         };
 
         this.onSubmitForm = this.onSubmitForm.bind(this);
         this.updateLogoUrl = this.updateLogoUrl.bind(this);
         this.updateSiteUrl = this.updateSiteUrl.bind(this);
+    }
+
+    componentDidMount() {
+        axios.get(DEFAULT_SITES).then(value => {
+            this.setState({
+                defaultSites: value.data
+            });
+        });
     }
 
     onSubmitForm() {
@@ -76,8 +88,26 @@ export default class SiteForm extends React.Component {
      */
     updateSiteUrl(event: any) {
         if (event && event.target) {
+            const siteUrl: string = event.target.value;
+            // Try to auto set the icon
+            if (this.state.logoUrl.trim().length < 1) {
+                let match;
+                for (let i = 0; i < Object.keys(this.state.defaultSites).length; i++) {
+                    const key = Object.keys(this.state.defaultSites)[i];
+                    if (siteUrl.toLowerCase().indexOf(key.toLowerCase()) !== -1) {
+                        match = key;
+                        break;
+                    }
+                }
+                if (match) {
+                    const matchItem = this.state.defaultSites[match];
+                    this.setState({
+                        logoUrl: matchItem.logo
+                    });
+                }
+            }
             this.setState({
-                siteUrl: event.target.value
+                siteUrl: siteUrl
             });
         }
     }
@@ -135,6 +165,9 @@ export default class SiteForm extends React.Component {
                         </Col>
                     </Row>
                 </Grid>
+                <div>
+                    <img className={styles.preview} src={this.state.logoUrl} height="39px" />
+                </div>
                 <button className={styles.modalBtn}
                     onClick={this.onSubmitForm}>
                         {this.submitButtonText}
