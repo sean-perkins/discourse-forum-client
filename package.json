@@ -164,6 +164,7 @@
     "webpack-merge": "^2.0.0"
   },
   "dependencies": {
+    "axios": "^0.17.0",
     "electron-debug": "^1.1.0",
     "electron-json-storage": "^4.0.2",
     "font-awesome": "^4.7.0",

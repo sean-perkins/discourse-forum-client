@@ -77,9 +77,9 @@ export default class Navigation extends React.Component {
         }
     }
 
-    removeSiteUrl(site: any) {
-        Site.remove(site.url).then(sites => {
-            if (this.props.activeUrl == site.url) {
+    removeSiteUrl(site: Site) {
+        Site.remove(site).then(sites => {
+            if (this.props.activeSite.identity == site.identity) {
                 this.props.updateCurrentSite();
             }
             this.setState({
@@ -94,8 +94,8 @@ export default class Navigation extends React.Component {
         for (let i = 0; i < this.state.navItems.length; i++) {
             const navItem = this.state.navItems[i];
             let activeClass = '';
-            if (this.props.activeUrl) {
-                if (this.props.activeUrl == navItem.url) {
+            if (this.props.activeSite) {
+                if (this.props.activeSite.identity == navItem.identity) {
                     activeClass = `${styles.active} active`;
                 }
             }
@@ -109,12 +109,12 @@ export default class Navigation extends React.Component {
             }
             navItems.push(
                 <div key={'navitem-' + i.toString()}>
-                    <ContextMenuTrigger id={navItem.url}>
+                    <ContextMenuTrigger id={navItem.identity}>
                         <div className={styles.item + ' ' + activeClass }>
                             <img src={navItem.logo} onClick={() => this.props.updateActiveSite(navItem)} />
                         </div>
                     </ContextMenuTrigger>
-                    <ContextMenu id={navItem.url}>
+                    <ContextMenu id={navItem.identity}>
                         <MenuItem data={editEvent} onClick={this.handleNavItemOptions}>
                             Edit
                         </MenuItem>
@@ -132,11 +132,11 @@ export default class Navigation extends React.Component {
                 <div className={styles.container} data-tid="container">
                     <div className={styles.community}>
                         {navItems}
-                        <div className={styles.item} onClick={this.displaySiteModal}>
-                            <button className={styles.addBtn}>
-                                <FontAwesome name="plus" />
-                            </button>
-                        </div>
+                    </div>
+                    <div className={styles.cta} onClick={this.displaySiteModal}>
+                        <button className={styles.addBtn}>
+                            <FontAwesome name="plus" />
+                        </button>
                     </div>
                 </div>
                 <Modal

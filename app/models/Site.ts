@@ -1,14 +1,18 @@
+import { Guid } from '../utils/Guid';
 const storage = require('electron-json-storage');
 
 const namespace = 'sites';
 
 export class Site {
+    // Unique identifer for the site
+    identity: string;
     // The url of the site to load
     url: string;
     // The url of the logo icon to render
     logo: string;
 
     constructor(options: Site = <Site>{}) {
+        this.identity = options.identity || Guid();
         this.url = options.url;
         this.logo = options.logo;
     }
@@ -19,7 +23,7 @@ export class Site {
                 if (error) {
                     throw error;
                 }
-                const sites = Array.isArray(data) ? data : [];
+                const sites = Array.isArray(data) ? data.map(site => new Site(site)) : [];
                 resolve(sites);
             });
         });
@@ -47,13 +51,13 @@ export class Site {
         });
     }
 
-    static remove(oldUrl: string): Promise<Site[]> {
+    static remove(site: Site): Promise<Site[]> {
         return new Promise((resolve, reject) => {
             Site.getSites().then(sites => {
                 let index = -1;
                 for (let i = 0; i < sites.length; i++) {
                     const existingSite = sites[i];
-                    if (existingSite.url === oldUrl) {
+                    if (existingSite.identity === site.identity) {
                         index = i;
                         break;
                     }
@@ -65,31 +69,31 @@ export class Site {
                     });
                 }
                 else {
-                    reject(`Site not found: ${oldUrl}`);
+                    reject(`Site not found: ${site.identity}`);
                 }
             });
         });
     }
 
-    static update(oldUrl: string, newSite: Site): Promise<Site[]> {
+    static update(site: Site): Promise<Site[]> {
         return new Promise((resolve, reject) => {
             Site.getSites().then(sites => {
                 let index = -1;
                 for (let i = 0; i < sites.length; i++) {
                     const existingSite = sites[i];
-                    if (existingSite.url === oldUrl) {
+                    if (existingSite.identity === site.identity) {
                         index = i;
                         break;
                     }
                 }
                 if (index !== -1) {
-                    sites[index] = newSite;
+                    sites[index] = site;
                     this.save(sites).then(() => {
                         resolve(sites);
                     });
                 }
                 else {
-                    reject(`Site not found: ${oldUrl}`);
+                    reject(`Site not found: ${site.identity}`);
                 }
             });
         });

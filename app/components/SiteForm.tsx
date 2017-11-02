@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { Grid, Row, Col } from 'react-flexbox-grid';
 import { Site } from '../models/Site';
+import { Guid } from '../utils/Guid';
 const FontAwesome = require('react-fontawesome');
 
 let styles = require('./SiteForm.scss');
 
 interface State {
+    identity: string;
     siteUrl: string;
     logoUrl: string;
     submitted: boolean;
@@ -20,6 +22,7 @@ export default class SiteForm extends React.Component {
         super(props);
 
         this.state = {
+            identity: props.editItem ? props.editItem.identity : Guid(),
             siteUrl: props.editItem ? props.editItem.url : '',
             logoUrl: props.editItem ? props.editItem.logo : '',
             submitted: false
@@ -28,7 +31,6 @@ export default class SiteForm extends React.Component {
         this.onSubmitForm = this.onSubmitForm.bind(this);
         this.updateLogoUrl = this.updateLogoUrl.bind(this);
         this.updateSiteUrl = this.updateSiteUrl.bind(this);
-
     }
 
     onSubmitForm() {
@@ -37,6 +39,7 @@ export default class SiteForm extends React.Component {
         });
         if (this.isValidUrl(this.state.siteUrl) && this.isValidUrl(this.state.logoUrl)) {
             const site = new Site({
+                identity: this.state.identity,
                 url: this.state.siteUrl,
                 logo: this.state.logoUrl
             });
@@ -53,8 +56,8 @@ export default class SiteForm extends React.Component {
         }
     }
 
-    updateExistingSite(site: any) {
-        Site.update(this.props.editItem.url, site).then(sites => {
+    updateExistingSite(site: Site) {
+        Site.update(site).then(sites => {
             this.props.onModalClose({}, sites);
     //         if (this.props.activeUrl == this.state.editItem.url) {
         //             this.props.updateCurrentSite();

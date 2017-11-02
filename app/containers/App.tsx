@@ -67,7 +67,7 @@ export default class App extends React.Component {
         return (
             <div>
                 <Navigation
-                    activeUrl={this.siteUrl}
+                    activeSite={this.state.activeSite}
                     updateCurrentSite={this.updateCurrentSite}
                     updateActiveSite={this.updateActiveSite} />
                 <div className="nav-container">
