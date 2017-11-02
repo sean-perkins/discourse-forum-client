@@ -2,7 +2,10 @@ import * as React from 'react';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu';
 import SiteForm from './SiteForm';
 import { Site } from '../models/Site';
+import { PACKAGE_JSON, SITE_URL } from '../utils/AppLinks';
+import axios from 'axios';
 
+const { ipcRenderer } = require('electron')
 const FontAwesome = require('react-fontawesome');
 const Modal = require('react-modal');
 let styles = require('./Navigation.scss');
@@ -14,6 +17,7 @@ interface State {
     navItems: Site[];
     editMode: boolean;
     editItem?: any;
+    updateAvailable: boolean;
 }
 
 export default class Navigation extends React.Component {
@@ -25,13 +29,15 @@ export default class Navigation extends React.Component {
         this.state = {
             modalVisible: false,
             navItems: [],
-            editMode: false
+            editMode: false,
+            updateAvailable: false
         };
 
         this.closeSiteModal = this.closeSiteModal.bind(this);
         this.handleNavItemOptions = this.handleNavItemOptions.bind(this);
 
         this.displaySiteModal = this.displaySiteModal.bind(this);
+        this.upgrade = this.upgrade.bind(this);
 
         Site.getSites().then(sites => {
             if (sites.length > 0) {
@@ -43,6 +49,23 @@ export default class Navigation extends React.Component {
                 this.setState({
                     modalVisible: true
                 });
+            }
+        });
+    }
+
+    componentDidMount() {
+        axios.get(PACKAGE_JSON).then(value => {
+            if (value) {
+                const version = Number(value.data.version.replace(/[^0-9]/g, ''));
+                if (version) {
+                    const envVersion: any = process.env.VERSION;
+                    const currentVersion: any = Number(envVersion.replace(/[^0-9]/g, ''));
+                    if (version > currentVersion) {
+                        this.setState({
+                            updateAvailable: true
+                        });
+                    }
+                }
             }
         });
     }
@@ -77,9 +100,9 @@ export default class Navigation extends React.Component {
         }
     }
 
-    removeSiteUrl(site: any) {
-        Site.remove(site.url).then(sites => {
-            if (this.props.activeUrl == site.url) {
+    removeSiteUrl(site: Site) {
+        Site.remove(site).then(sites => {
+            if (this.props.activeSite.identity == site.identity) {
                 this.props.updateCurrentSite();
             }
             this.setState({
@@ -89,13 +112,19 @@ export default class Navigation extends React.Component {
         });
     }
 
+    upgrade() {
+        if (this.state.updateAvailable) {
+            ipcRenderer.send('app-upgrade', SITE_URL);
+        }
+    }
+
     render() {
         const navItems = [];
         for (let i = 0; i < this.state.navItems.length; i++) {
             const navItem = this.state.navItems[i];
             let activeClass = '';
-            if (this.props.activeUrl) {
-                if (this.props.activeUrl == navItem.url) {
+            if (this.props.activeSite) {
+                if (this.props.activeSite.identity == navItem.identity) {
                     activeClass = `${styles.active} active`;
                 }
             }
@@ -109,12 +138,15 @@ export default class Navigation extends React.Component {
             }
             navItems.push(
                 <div key={'navitem-' + i.toString()}>
-                    <ContextMenuTrigger id={navItem.url}>
+                    <ContextMenuTrigger id={navItem.identity}>
                         <div className={styles.item + ' ' + activeClass }>
-                            <img src={navItem.logo} onClick={() => this.props.updateActiveSite(navItem)} />
+                            <button className={styles.icon}
+                                onClick={() => this.props.updateActiveSite(navItem)}
+                                style={{ backgroundImage: "url(" + navItem.logo + ")" }}>
+                            </button>
                         </div>
                     </ContextMenuTrigger>
-                    <ContextMenu id={navItem.url}>
+                    <ContextMenu id={navItem.identity}>
                         <MenuItem data={editEvent} onClick={this.handleNavItemOptions}>
                             Edit
                         </MenuItem>
@@ -127,17 +159,20 @@ export default class Navigation extends React.Component {
             );
         }
 
+        const versionClass = `${styles.version} ${this.state.updateAvailable ? styles.update : ''}`;
+
         return (
             <div>
                 <div className={styles.container} data-tid="container">
                     <div className={styles.community}>
                         {navItems}
-                        <div className={styles.item} onClick={this.displaySiteModal}>
-                            <button className={styles.addBtn}>
-                                <FontAwesome name="plus" />
-                            </button>
-                        </div>
                     </div>
+                    <div className={styles.cta} onClick={this.displaySiteModal}>
+                        <button className={styles.addBtn}>
+                            <FontAwesome name="plus" />
+                        </button>
+                    </div>
+                    <span className={versionClass} onClick={this.upgrade}>v{process.env.VERSION}</span>
                 </div>
                 <Modal
                     isOpen={this.state.modalVisible}

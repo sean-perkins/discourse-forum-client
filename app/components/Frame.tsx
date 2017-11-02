@@ -69,7 +69,7 @@ export default class Frame extends React.Component {
                         <FontAwesome name="arrow-right" />
                     </span>
                 </div>
-                <div className={styles.centerContainer}>
+                <div className={styles.centerContainer} style={{ display: this.props.webview && this.props.webview.ready ? 'none' : 'block' }}>
                     <Loader color="#fff" size={20} />
                 </div>
                 <WebView
